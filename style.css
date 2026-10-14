@@ -34,7 +34,13 @@ input::placeholder { color: #93968d; }
 .player-row { display: flex; align-items: center; gap: 12px; min-height: 58px; border-bottom: 1px solid var(--line); }
 .player-row:last-child { border-bottom: 0; }
 .player-count { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--badge-background); color: var(--badge-text); font-size: 13px; font-weight: 650; flex-shrink: 0; }
-.player-label { flex: 1; overflow-wrap: anywhere; }
+.player-label { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.player-actions { display: flex; flex-shrink: 0; }
+.player-action { border: 0; background: transparent; color: var(--muted); min-height: 44px; min-width: 44px; padding: 8px; font-size: 12px; }
+.player-action:hover { color: var(--accent); }
+.save-player { color: var(--accent); font-weight: 600; }
+.edit-player-form { display: flex; align-items: center; gap: 2px; flex: 1; min-width: 0; padding: 6px 0; }
+.edit-player-input { min-height: 42px; padding: 8px; }
 .delete-player { border: 0; background: transparent; color: var(--muted); min-height: 44px; min-width: 44px; padding: 8px; font-size: 12px; }
 .delete-player:hover, .delete-set:hover { color: #a34438; }
 .sets-section { margin-top: 32px; }

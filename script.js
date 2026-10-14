@@ -4,6 +4,7 @@ const STORAGE_KEY = "set-choi-v1";
 let state = { players: [], sets: [], nextSet: 1 };
 let currentTab = "pending";
 let noticeTimer;
+let editingPlayerId = null;
 const $ = (selector) => document.querySelector(selector);
 const uid = () => globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
@@ -69,6 +70,38 @@ function playerCount(id) {
   return state.sets.filter((set) => set.slots.some((slot) => slot?.id === id)).length;
 }
 
+function nameExists(name, exceptId = null) {
+  const normalized = name.normalize("NFC").toLocaleLowerCase("vi");
+  return state.players.some((player) => player.id !== exceptId && player.name.normalize("NFC").toLocaleLowerCase("vi") === normalized);
+}
+
+function finishEditing(id) {
+  editingPlayerId = null;
+  renderPlayers();
+  document.getElementById(`edit-${id}`)?.focus();
+}
+
+function renamePlayer(id, value) {
+  const player = state.players.find((item) => item.id === id);
+  if (!player) return;
+  const name = value.trim().replace(/\s+/g, " ");
+  if (!name || name.length > 60 || nameExists(name, id)) {
+    notify(!name ? "Nhập tên người chơi." : name.length > 60 ? "Tên tối đa 60 ký tự." : "Tên người chơi đã tồn tại.");
+    document.getElementById(`name-${id}`)?.focus();
+    return;
+  }
+  player.name = name;
+  state.sets.forEach((set) => {
+    set.slots.forEach((slot) => {
+      if (slot?.id === id) slot.name = name;
+    });
+  });
+  editingPlayerId = null;
+  save();
+  render();
+  document.getElementById(`edit-${id}`)?.focus();
+}
+
 function renderPlayers() {
   const list = $("#player-list");
   list.replaceChildren();
@@ -77,9 +110,48 @@ function renderPlayers() {
     const row = element("li", "player-row");
     const count = element("span", "player-count", playerCount(player.id));
     count.setAttribute("aria-label", `${playerCount(player.id)} trận`);
+    if (editingPlayerId === player.id) {
+      const form = element("form", "edit-player-form");
+      const input = element("input", "edit-player-input");
+      input.id = `name-${player.id}`;
+      input.type = "text";
+      input.value = player.name;
+      input.maxLength = 60;
+      input.autocomplete = "off";
+      input.setAttribute("aria-label", "Tên người chơi");
+      const submit = element("button", "player-action save-player", "Lưu");
+      submit.type = "submit";
+      const cancel = button("Huỷ", "player-action", () => finishEditing(player.id));
+      form.append(input, submit, cancel);
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        renamePlayer(player.id, input.value);
+      });
+      input.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          finishEditing(player.id);
+        }
+      });
+      row.append(count, form);
+      list.append(row);
+      return;
+    }
+    const edit = button("Sửa", "player-action", () => {
+      closePlayerPicker();
+      editingPlayerId = player.id;
+      renderPlayers();
+      const input = document.getElementById(`name-${player.id}`);
+      input?.focus();
+      input?.select();
+    });
+    edit.id = `edit-${player.id}`;
+    edit.setAttribute("aria-label", `Sửa tên ${player.name}`);
     const remove = button("Xoá", "delete-player", () => removePlayer(player.id));
     remove.setAttribute("aria-label", `Xoá người chơi ${player.name}`);
-    row.append(count, element("span", "player-label", player.name), remove);
+    const actions = element("div", "player-actions");
+    actions.append(edit, remove);
+    row.append(count, element("span", "player-label", player.name), actions);
     list.append(row);
   });
 }
@@ -279,7 +351,7 @@ $("#player-form").addEventListener("submit", (event) => {
   const input = $("#player-name");
   const name = input.value.trim().replace(/\s+/g, " ");
   if (!name) { input.focus(); return; }
-  if (state.players.some((player) => player.name.normalize("NFC").toLocaleLowerCase("vi") === name.normalize("NFC").toLocaleLowerCase("vi"))) {
+  if (nameExists(name)) {
     notify("Tên người chơi đã tồn tại.");
     input.focus();
     return;
@@ -349,6 +421,7 @@ $("#confirm-reset").addEventListener("click", () => {
     return;
   }
   state = { players: [], sets: [], nextSet: 1 };
+  editingPlayerId = null;
   currentTab = "pending";
   $("#player-name").value = "";
   render();
