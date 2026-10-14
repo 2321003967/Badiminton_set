@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f7f2">
+  <meta name="description" content="Chia đội và quản lý các set chơi đơn giản.">
+  <title>Set chơi</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <main class="app">
+    <header class="page-header">
+      <span class="eyebrow">CHIA ĐỘI · CÙNG CHƠI</span>
+      <h1>Set chơi<span class="title-dot">.</span></h1>
+      <p>Thêm người. Chia đội. Vào sân.</p>
+    </header>
+
+    <section class="panel players-panel" aria-labelledby="players-heading">
+      <div class="section-heading">
+        <h2 id="players-heading">Người chơi <span id="player-total" class="small-count">0</span></h2>
+        <span class="muted small">Số set ở bên trái</span>
+      </div>
+      <form id="player-form" class="player-form">
+        <label class="sr-only" for="player-name">Tên người chơi</label>
+        <input id="player-name" name="player-name" type="text" placeholder="Nhập tên người chơi…" maxlength="60" autocomplete="off" required>
+        <button class="button primary" type="submit">+ Thêm</button>
+      </form>
+      <ul id="player-list" class="player-list"></ul>
+      <p id="players-empty" class="empty-players">Thêm tên để bắt đầu chia đội.</p>
+    </section>
+
+    <section class="sets-section" aria-labelledby="sets-heading">
+      <div class="section-heading sets-heading">
+        <h2 id="sets-heading">Các set chơi</h2>
+        <button id="add-set" class="button primary" type="button">+ Tạo set</button>
+      </div>
+      <div class="tabs" role="tablist" aria-label="Trạng thái set">
+        <button id="tab-pending" class="tab active" type="button" role="tab" aria-selected="true" aria-controls="set-list" data-tab="pending">Chưa đánh <span id="pending-total">0</span></button>
+        <button id="tab-completed" class="tab" type="button" role="tab" aria-selected="false" aria-controls="set-list" tabindex="-1" data-tab="completed">Hoàn thành <span id="completed-total">0</span></button>
+      </div>
+      <div id="set-list" class="set-list" role="tabpanel" aria-labelledby="tab-pending"></div>
+    </section>
+  </main>
+  <p id="notice" class="notice" role="status" aria-live="polite" hidden></p>
+</body>
+</html>
