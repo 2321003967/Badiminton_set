@@ -40,14 +40,21 @@
   </main>
   <dialog id="reset-dialog" class="confirm-dialog" aria-labelledby="reset-title" aria-describedby="reset-description">
     <div class="dialog-content">
-      <div class="dialog-icon" aria-hidden="true">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M9 6V4h6v2M5 6l1 14h12l1-14M10 10v6M14 10v6"/></svg>
-      </div>
-      <h2 id="reset-title">Reset dữ liệu?</h2>
-      <p id="reset-description">Xoá hết người chơi và trận đấu trên máy này.<br>Không thể khôi phục.</p>
+      <h2 id="reset-title">Xoá hết dữ liệu?</h2>
+      <p id="reset-description">Xoá toàn bộ người chơi và trận đấu. Không thể khôi phục.</p>
       <div class="dialog-actions">
         <button id="cancel-reset" class="button secondary" type="button" autofocus>Huỷ</button>
         <button id="confirm-reset" class="button danger" type="button">Xoá tất cả</button>
+      </div>
+    </div>
+  </dialog>
+  <dialog id="delete-match-dialog" class="confirm-dialog" aria-labelledby="delete-match-title" aria-describedby="delete-match-description">
+    <div class="dialog-content">
+      <h2 id="delete-match-title">Xoá trận?</h2>
+      <p id="delete-match-description">Không thể khôi phục sau khi xoá.</p>
+      <div class="dialog-actions">
+        <button id="cancel-delete-match" class="button secondary" type="button" autofocus>Huỷ</button>
+        <button id="confirm-delete-match" class="button danger" type="button">Xoá trận</button>
       </div>
     </div>
   </dialog>

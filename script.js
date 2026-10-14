@@ -113,6 +113,54 @@ function selectPlayer(set, index, id) {
   document.getElementById(`slot-${set.id}-${index}`)?.focus();
 }
 
+let activePicker = null;
+let pendingDeleteId = null;
+
+function closePlayerPicker(restoreFocus = false) {
+  if (!activePicker) return;
+  const { wrapper, trigger, list } = activePicker;
+  list.hidden = true;
+  trigger.setAttribute("aria-expanded", "false");
+  wrapper.closest(".set-card")?.classList.remove("picker-open");
+  activePicker = null;
+  if (restoreFocus) trigger.focus();
+}
+
+function openPlayerPicker(set, index, wrapper, trigger, list, focusOption = false) {
+  if (activePicker?.trigger === trigger) {
+    closePlayerPicker(true);
+    return;
+  }
+  closePlayerPicker();
+  list.replaceChildren();
+  let selectedOption;
+  availablePlayers(set, index).forEach((player) => {
+    const selected = set.slots[index]?.id === player.id;
+    const option = button("", `picker-option${selected ? " selected" : ""}`, () => {
+      closePlayerPicker();
+      selectPlayer(set, index, player.id);
+    });
+    option.setAttribute("aria-pressed", String(selected));
+    const mark = element("span", "option-mark", selected ? "✓" : "");
+    mark.setAttribute("aria-hidden", "true");
+    option.append(element("span", "option-name", player.name), mark);
+    list.append(option);
+    if (selected) selectedOption = option;
+  });
+  if (set.slots[index]) {
+    list.append(button("Bỏ chọn", "picker-option clear-option", () => {
+      closePlayerPicker();
+      selectPlayer(set, index, "");
+    }));
+  }
+  if (!list.children.length) list.append(element("p", "picker-empty", "Chưa có người chơi"));
+  list.hidden = false;
+  trigger.setAttribute("aria-expanded", "true");
+  wrapper.closest(".set-card")?.classList.add("picker-open");
+  activePicker = { wrapper, trigger, list };
+  if (focusOption) (selectedOption || list.querySelector("button") || trigger).focus();
+}
+
 function renderSet(set) {
   const card = element("article", `set-card${set.playing ? " is-playing" : ""}`);
   const heading = element("div", "card-heading");
@@ -127,30 +175,47 @@ function renderSet(set) {
       if (set.completed) {
         team.append(element("p", "completed-name", set.slots[index].name));
       } else {
-        const select = element("select");
-        select.id = `slot-${set.id}-${index}`;
-        select.setAttribute("aria-label", `Trận ${set.number}, đội ${teamIndex === 0 ? "A" : "B"}, người ${position + 1}`);
-        const placeholder = element("option", "", "Chọn người");
-        placeholder.value = "";
-        select.append(placeholder);
-        availablePlayers(set, index).forEach((player) => {
-          const option = element("option", "", player.name);
-          option.value = player.id;
-          select.append(option);
+        const wrapper = element("div", "player-dropdown");
+        const list = element("div", "picker-options");
+        list.id = `options-${set.id}-${index}`;
+        list.hidden = true;
+        list.setAttribute("role", "group");
+        list.setAttribute("aria-label", "Người chơi");
+        const trigger = button("", `player-select${set.slots[index] ? "" : " placeholder"}`, () => openPlayerPicker(set, index, wrapper, trigger, list));
+        trigger.id = `slot-${set.id}-${index}`;
+        trigger.setAttribute("aria-label", `Trận ${set.number}, đội ${teamIndex === 0 ? "A" : "B"}, người ${position + 1}: ${set.slots[index]?.name || "Chọn người"}`);
+        trigger.setAttribute("aria-expanded", "false");
+        trigger.setAttribute("aria-controls", list.id);
+        trigger.addEventListener("keydown", (event) => {
+          if (!["ArrowDown", "ArrowUp"].includes(event.key)) return;
+          event.preventDefault();
+          if (activePicker?.trigger === trigger) list.querySelector("button")?.focus();
+          else openPlayerPicker(set, index, wrapper, trigger, list, true);
         });
-        select.value = set.slots[index]?.id || "";
-        select.addEventListener("change", () => selectPlayer(set, index, select.value));
-        team.append(select);
+        list.addEventListener("keydown", (event) => {
+          if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
+          const options = Array.from(list.querySelectorAll("button"));
+          if (!options.length) return;
+          event.preventDefault();
+          const position = options.indexOf(document.activeElement);
+          const next = event.key === "Home" ? 0 : event.key === "End" ? options.length - 1 : (position + (event.key === "ArrowDown" ? 1 : -1) + options.length) % options.length;
+          options[next].focus();
+        });
+        const arrow = element("span", "select-arrow");
+        arrow.setAttribute("aria-hidden", "true");
+        trigger.append(element("span", "select-name", set.slots[index]?.name || "Chọn người"), arrow);
+        wrapper.append(trigger, list);
+        team.append(wrapper);
       }
     }
     teams.append(team);
   });
   const actions = element("div", "card-footer");
   const remove = button("Xoá trận", "delete-set", () => {
-    if (!confirm(`Xoá trận ${set.number}?`)) return;
-    state.sets = state.sets.filter((item) => item.id !== set.id);
-    save();
-    render();
+    closePlayerPicker();
+    pendingDeleteId = set.id;
+    $("#delete-match-title").textContent = `Xoá trận ${set.number}?`;
+    $("#delete-match-dialog").showModal();
   });
   remove.setAttribute("aria-label", `Xoá trận ${set.number}`);
   const complete = button(set.completed ? "↶ Chưa đánh" : set.playing ? "✓ Hoàn thành" : "▶ Bắt đầu", `button ${set.completed ? "secondary" : set.playing ? "primary" : "start-button"}`, () => {
@@ -187,6 +252,7 @@ function switchTab(tab) {
 }
 
 function render() {
+  closePlayerPicker();
   renderPlayers();
   $("#pending-total").textContent = state.sets.filter((set) => !set.completed).length;
   $("#completed-total").textContent = state.sets.filter((set) => set.completed).length;
@@ -231,6 +297,38 @@ $("#add-set").addEventListener("click", () => {
   save();
   render();
   $("#set-list").lastElementChild?.scrollIntoView({ block: "nearest" });
+});
+
+document.addEventListener("pointerdown", (event) => {
+  if (activePicker && !activePicker.wrapper.contains(event.target)) closePlayerPicker();
+});
+
+document.addEventListener("focusin", (event) => {
+  if (activePicker && !activePicker.wrapper.contains(event.target)) closePlayerPicker();
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && activePicker) {
+    event.preventDefault();
+    closePlayerPicker(true);
+  }
+});
+
+$("#cancel-delete-match").addEventListener("click", () => {
+  $("#delete-match-dialog").close();
+});
+
+$("#delete-match-dialog").addEventListener("close", () => {
+  pendingDeleteId = null;
+});
+
+$("#confirm-delete-match").addEventListener("click", () => {
+  if (!$("#delete-match-dialog").open || !pendingDeleteId) return;
+  state.sets = state.sets.filter((set) => set.id !== pendingDeleteId);
+  $("#delete-match-dialog").close();
+  save();
+  render();
+  $("#add-set").focus();
 });
 
 $("#reset-data").addEventListener("click", () => {

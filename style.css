@@ -11,10 +11,10 @@
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--background); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 15px; line-height: 1.5; }
-button, input, select { font: inherit; }
+button, input { font: inherit; }
 button { cursor: pointer; touch-action: manipulation; }
-button, input, select { -webkit-tap-highlight-color: transparent; }
-button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+button, input { -webkit-tap-highlight-color: transparent; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .app { width: min(100% - 40px, 680px); margin: 0 auto; padding: 48px 0 24px; }
 h2 { font-size: 17px; font-weight: 650; margin: 0; letter-spacing: -.3px; }
 .panel, .set-card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 22px; }
@@ -23,7 +23,7 @@ h2 { font-size: 17px; font-weight: 650; margin: 0; letter-spacing: -.3px; }
 .muted { color: var(--muted); }
 .small-count { font-size: 12px; font-weight: 500; color: var(--muted); margin-left: 6px; }
 .player-form { display: flex; gap: 8px; margin: 18px 0 8px; }
-input, select { min-width: 0; border: 1px solid var(--line); border-radius: 10px; background: #fafbf8; color: var(--text); min-height: 46px; padding: 10px 12px; font-size: 16px; }
+input { min-width: 0; border: 1px solid var(--line); border-radius: 10px; background: #fafbf8; color: var(--text); min-height: 46px; padding: 10px 12px; font-size: 16px; }
 input { flex: 1; width: 100%; }
 input::placeholder { color: #93968d; }
 .button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 46px; padding: 10px 16px; border-radius: 10px; border: 1px solid var(--line); font-size: 14px; font-weight: 600; white-space: nowrap; }
@@ -57,7 +57,24 @@ input::placeholder { color: #93968d; }
 .teams { display: grid; grid-template-columns: minmax(0, 1fr) 24px minmax(0, 1fr); gap: 10px; align-items: center; }
 .team { display: grid; gap: 8px; min-width: 0; }
 .team-title { font-size: 10px; color: var(--muted); letter-spacing: 1.5px; font-weight: 600; margin-bottom: 2px; }
-select { width: 100%; padding-left: 10px; padding-right: 4px; font-size: 14px; }
+.player-select { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; min-height: 46px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: white; color: var(--text); font-size: 14px; text-align: left; }
+.player-select.placeholder { color: var(--muted); }
+.player-select:hover { border-color: #a8b79f; }
+.select-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.select-arrow { width: 6px; height: 6px; border-right: 1px solid currentColor; border-bottom: 1px solid currentColor; transform: rotate(45deg); flex-shrink: 0; margin: -3px 2px 0 0; }
+.player-dropdown { position: relative; min-width: 0; }
+.set-card { position: relative; }
+.set-card.picker-open { z-index: 3; }
+.player-select[aria-expanded="true"] { border-color: #a8b79f; }
+.confirm-dialog::backdrop { background: #0005; }
+.picker-options { position: absolute; top: calc(100% + 4px); left: 0; width: 100%; z-index: 4; padding: 4px; max-height: 220px; overflow-y: auto; overscroll-behavior: contain; border: 1px solid #d9e1d3; border-radius: 8px; background: white; box-shadow: 0 5px 14px #28382e14; }
+.picker-option { display: flex; align-items: center; justify-content: space-between; gap: 6px; width: 100%; min-height: 44px; padding: 10px 8px; border: 0; border-radius: 4px; background: transparent; color: var(--text); text-align: left; font-size: 14px; }
+.picker-option:hover, .picker-option:focus-visible { background: #f1f4ed; }
+.picker-option.selected { background: var(--badge-background); color: var(--badge-text); }
+.option-name { overflow-wrap: anywhere; }
+.option-mark { flex-shrink: 0; }
+.clear-option { color: var(--muted); border-top: 1px solid var(--line); border-radius: 0; margin-top: 6px; font-size: 14px; }
+.picker-empty { color: var(--muted); font-size: 12px; padding: 8px; margin: 0; }
 .versus { color: #a1a497; font-size: 10px; text-align: center; margin-top: 20px; }
 .completed-name { margin: 0; background: #f8f9f5; padding: 11px; border-radius: 10px; min-height: 44px; font-size: 14px; overflow-wrap: anywhere; }
 .card-footer { display: flex; justify-content: space-between; align-items: center; gap: 12px; border-top: 1px solid var(--line); padding-top: 16px; margin-top: 20px; }
@@ -68,14 +85,12 @@ select { width: 100%; padding-left: 10px; padding-right: 4px; font-size: 14px; }
 .reset-actions { display: flex; justify-content: center; margin-top: 28px; }
 .reset-button { background: transparent; color: #a34438; border-color: #e6d4ce; }
 .reset-button:hover { background: #fbefeb; }
-.confirm-dialog { width: min(360px, calc(100% - 40px)); max-height: calc(100dvh - 40px); padding: 0; border: 1px solid var(--line); border-radius: 22px; background: var(--surface); color: var(--text); box-shadow: 0 20px 70px #18251a26; }
-.confirm-dialog::backdrop { background: #19241bc0; }
-.dialog-content { padding: 26px; }
-.dialog-icon { display: grid; place-items: center; width: 46px; height: 46px; background: #fbefeb; color: #a34438; border-radius: 14px; margin-bottom: 18px; }
-.dialog-content h2 { font-size: 20px; }
-.dialog-content p { color: var(--muted); font-size: 14px; line-height: 1.7; margin: 10px 0 24px; }
-.dialog-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.dialog-actions .button { min-height: 48px; }
+.confirm-dialog { width: min(340px, calc(100% - 40px)); max-height: calc(100dvh - 40px); padding: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--text); }
+.dialog-content { padding: 20px; }
+.dialog-content h2 { font-size: 17px; }
+.dialog-content p { color: var(--muted); font-size: 14px; line-height: 1.5; margin: 10px 0 20px; }
+.dialog-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.dialog-actions .button { min-height: 44px; border-radius: 6px; font-weight: 500; }
 .danger { background: #a34438; border-color: #a34438; color: white; }
 .danger:hover { background: #8f392f; }
 .notice { position: fixed; bottom: max(20px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: max-content; max-width: calc(100% - 32px); background: var(--accent); color: white; padding: 12px 18px; border-radius: 12px; font-size: 13px; box-shadow: 0 4px 20px #0002; z-index: 2; }
@@ -88,11 +103,8 @@ select { width: 100%; padding-left: 10px; padding-right: 4px; font-size: 14px; }
   .players-panel .section-heading .small { font-size: 10px; }
   .button { padding: 10px 12px; }
   .teams { gap: 6px; grid-template-columns: minmax(0, 1fr) 18px minmax(0, 1fr); }
-  select { font-size: 16px; }
   .tabs { gap: 20px; }
 }
 @media (prefers-reduced-motion: no-preference) {
   button { transition: opacity .15s, background-color .15s; }
-  .confirm-dialog[open] { animation: dialog-appear .18s ease-out; }
 }
-@keyframes dialog-appear { from { opacity: 0; transform: translateY(8px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
