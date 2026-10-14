@@ -29,12 +29,28 @@
         <button id="add-set" class="button primary" type="button">+ Tạo trận</button>
       </div>
       <div class="tabs" role="tablist" aria-label="Trạng thái trận đấu">
-        <button id="tab-pending" class="tab active" type="button" role="tab" aria-selected="true" aria-controls="set-list" data-tab="pending">Chưa đánh <span id="pending-total">0</span></button>
+        <button id="tab-pending" class="tab active" type="button" role="tab" aria-selected="true" aria-controls="set-list" data-tab="pending">Chưa / đang đánh <span id="pending-total">0</span></button>
         <button id="tab-completed" class="tab" type="button" role="tab" aria-selected="false" aria-controls="set-list" tabindex="-1" data-tab="completed">Hoàn thành <span id="completed-total">0</span></button>
       </div>
       <div id="set-list" class="set-list" role="tabpanel" aria-labelledby="tab-pending"></div>
     </section>
+    <div class="reset-actions">
+      <button id="reset-data" class="button reset-button" type="button">Reset dữ liệu</button>
+    </div>
   </main>
+  <dialog id="reset-dialog" class="confirm-dialog" aria-labelledby="reset-title" aria-describedby="reset-description">
+    <div class="dialog-content">
+      <div class="dialog-icon" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M9 6V4h6v2M5 6l1 14h12l1-14M10 10v6M14 10v6"/></svg>
+      </div>
+      <h2 id="reset-title">Reset dữ liệu?</h2>
+      <p id="reset-description">Xoá hết người chơi và trận đấu trên máy này.<br>Không thể khôi phục.</p>
+      <div class="dialog-actions">
+        <button id="cancel-reset" class="button secondary" type="button" autofocus>Huỷ</button>
+        <button id="confirm-reset" class="button danger" type="button">Xoá tất cả</button>
+      </div>
+    </div>
+  </dialog>
   <p id="notice" class="notice" role="status" aria-live="polite" hidden></p>
 </body>
 </html>

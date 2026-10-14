@@ -37,7 +37,7 @@ function load() {
         return set.completed || ids.has(slot.id) ? { id: slot.id, name: slot.name } : null;
       });
       if (set.completed && slots.some((slot) => !slot)) throw new Error("Incomplete set");
-      return { id: set.id, number: set.number, slots, completed: set.completed };
+      return { id: set.id, number: set.number, slots, completed: set.completed, playing: !set.completed && set.playing === true && slots.every(Boolean) };
     });
     state = { players, sets, nextSet: Math.max(0, ...sets.map((set) => set.number)) + 1 };
     if (Number.isInteger(saved.nextSet) && saved.nextSet > state.nextSet) state.nextSet = saved.nextSet;
@@ -87,10 +87,11 @@ function renderPlayers() {
 function removePlayer(id) {
   const player = state.players.find((item) => item.id === id);
   const used = state.sets.some((set) => !set.completed && set.slots.some((slot) => slot?.id === id));
-  if (used && !confirm(`Xoá ${player.name}? Các vị trí của người này trong trận chưa đánh sẽ để trống.`)) return;
+  if (used && !confirm(`Xoá ${player.name}? Các vị trí trong trận chưa hoàn thành sẽ để trống, trận đang đánh sẽ chuyển về chưa đánh.`)) return;
   state.players = state.players.filter((item) => item.id !== id);
   state.sets.filter((set) => !set.completed).forEach((set) => {
     set.slots = set.slots.map((slot) => slot?.id === id ? null : slot);
+    if (set.slots.some((slot) => !slot)) set.playing = false;
   });
   save();
   render();
@@ -106,15 +107,16 @@ function selectPlayer(set, index, id) {
   const player = state.players.find((item) => item.id === id);
   if (id && (!player || !availablePlayers(set, index).some((item) => item.id === id))) return;
   set.slots[index] = player ? { id: player.id, name: player.name } : null;
+  if (set.slots.some((slot) => !slot)) set.playing = false;
   save();
   render();
   document.getElementById(`slot-${set.id}-${index}`)?.focus();
 }
 
 function renderSet(set) {
-  const card = element("article", "set-card");
+  const card = element("article", `set-card${set.playing ? " is-playing" : ""}`);
   const heading = element("div", "card-heading");
-  heading.append(element("h3", "", `Trận ${String(set.number).padStart(2, "0")}`), element("span", `status${set.completed ? " done" : ""}`, set.completed ? "Đã hoàn thành" : "Chưa đánh"));
+  heading.append(element("h3", "", `Trận ${String(set.number).padStart(2, "0")}`), element("span", `status${set.completed ? " done" : set.playing ? " playing" : ""}`, set.completed ? "Đã hoàn thành" : set.playing ? "Đang đánh" : "Chưa đánh"));
   const teams = element("div", "teams");
   [0, 1].forEach((teamIndex) => {
     if (teamIndex === 1) teams.append(element("span", "versus", "vs"));
@@ -151,22 +153,28 @@ function renderSet(set) {
     render();
   });
   remove.setAttribute("aria-label", `Xoá trận ${set.number}`);
-  const complete = button(set.completed ? "↶ Chưa đánh" : "✓ Hoàn thành", `button ${set.completed ? "secondary" : "primary"}`, () => {
+  const complete = button(set.completed ? "↶ Chưa đánh" : set.playing ? "✓ Hoàn thành" : "▶ Bắt đầu", `button ${set.completed ? "secondary" : set.playing ? "primary" : "start-button"}`, () => {
     if (set.completed) {
       set.slots = set.slots.map((slot) => state.players.some((player) => player.id === slot.id) ? slot : null);
       set.completed = false;
+      set.playing = false;
       switchTab("pending");
     } else {
       if (set.slots.some((slot) => !slot)) return;
-      set.completed = true;
-      notify(`Đã hoàn thành trận ${set.number}.`);
+      if (set.playing) {
+        set.completed = true;
+        set.playing = false;
+        notify(`Đã hoàn thành trận ${set.number}.`);
+      } else {
+        set.playing = true;
+      }
     }
     save();
     render();
   });
   if (!set.completed && set.slots.some((slot) => !slot)) {
     complete.disabled = true;
-    complete.title = "Chọn đủ 4 người để hoàn thành trận";
+    complete.title = "Chọn đủ 4 người để bắt đầu trận";
   }
   actions.append(remove, complete);
   card.append(heading, teams, actions);
@@ -218,11 +226,36 @@ $("#player-form").addEventListener("submit", (event) => {
 });
 
 $("#add-set").addEventListener("click", () => {
-  state.sets.push({ id: uid(), number: state.nextSet++, slots: [null, null, null, null], completed: false });
+  state.sets.push({ id: uid(), number: state.nextSet++, slots: [null, null, null, null], completed: false, playing: false });
   currentTab = "pending";
   save();
   render();
   $("#set-list").lastElementChild?.scrollIntoView({ block: "nearest" });
+});
+
+$("#reset-data").addEventListener("click", () => {
+  $("#reset-dialog").showModal();
+});
+
+$("#cancel-reset").addEventListener("click", () => {
+  $("#reset-dialog").close();
+});
+
+$("#confirm-reset").addEventListener("click", () => {
+  if (!$("#reset-dialog").open) return;
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    $("#reset-dialog").close();
+    notify("Không xoá được dữ liệu đã lưu. Vui lòng thử lại.");
+    return;
+  }
+  state = { players: [], sets: [], nextSet: 1 };
+  currentTab = "pending";
+  $("#player-name").value = "";
+  render();
+  $("#reset-dialog").close();
+  notify("Đã reset dữ liệu.");
 });
 
 document.querySelectorAll(".tab").forEach((tab) => {
