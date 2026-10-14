@@ -76,7 +76,7 @@ function renderPlayers() {
   state.players.forEach((player) => {
     const row = element("li", "player-row");
     const count = element("span", "player-count", playerCount(player.id));
-    count.setAttribute("aria-label", `${playerCount(player.id)} set`);
+    count.setAttribute("aria-label", `${playerCount(player.id)} trận`);
     const remove = button("Xoá", "delete-player", () => removePlayer(player.id));
     remove.setAttribute("aria-label", `Xoá người chơi ${player.name}`);
     row.append(count, element("span", "player-label", player.name), remove);
@@ -87,7 +87,7 @@ function renderPlayers() {
 function removePlayer(id) {
   const player = state.players.find((item) => item.id === id);
   const used = state.sets.some((set) => !set.completed && set.slots.some((slot) => slot?.id === id));
-  if (used && !confirm(`Xoá ${player.name}? Các vị trí của người này trong set chưa đánh sẽ để trống.`)) return;
+  if (used && !confirm(`Xoá ${player.name}? Các vị trí của người này trong trận chưa đánh sẽ để trống.`)) return;
   state.players = state.players.filter((item) => item.id !== id);
   state.sets.filter((set) => !set.completed).forEach((set) => {
     set.slots = set.slots.map((slot) => slot?.id === id ? null : slot);
@@ -114,7 +114,7 @@ function selectPlayer(set, index, id) {
 function renderSet(set) {
   const card = element("article", "set-card");
   const heading = element("div", "card-heading");
-  heading.append(element("h3", "", `Set ${String(set.number).padStart(2, "0")}`), element("span", `status${set.completed ? " done" : ""}`, set.completed ? "Đã hoàn thành" : "Chưa đánh"));
+  heading.append(element("h3", "", `Trận ${String(set.number).padStart(2, "0")}`), element("span", `status${set.completed ? " done" : ""}`, set.completed ? "Đã hoàn thành" : "Chưa đánh"));
   const teams = element("div", "teams");
   [0, 1].forEach((teamIndex) => {
     if (teamIndex === 1) teams.append(element("span", "versus", "vs"));
@@ -127,7 +127,7 @@ function renderSet(set) {
       } else {
         const select = element("select");
         select.id = `slot-${set.id}-${index}`;
-        select.setAttribute("aria-label", `Set ${set.number}, đội ${teamIndex === 0 ? "A" : "B"}, người ${position + 1}`);
+        select.setAttribute("aria-label", `Trận ${set.number}, đội ${teamIndex === 0 ? "A" : "B"}, người ${position + 1}`);
         const placeholder = element("option", "", "Chọn người");
         placeholder.value = "";
         select.append(placeholder);
@@ -144,13 +144,13 @@ function renderSet(set) {
     teams.append(team);
   });
   const actions = element("div", "card-footer");
-  const remove = button("Xoá set", "delete-set", () => {
-    if (!confirm(`Xoá set ${set.number}?`)) return;
+  const remove = button("Xoá trận", "delete-set", () => {
+    if (!confirm(`Xoá trận ${set.number}?`)) return;
     state.sets = state.sets.filter((item) => item.id !== set.id);
     save();
     render();
   });
-  remove.setAttribute("aria-label", `Xoá set ${set.number}`);
+  remove.setAttribute("aria-label", `Xoá trận ${set.number}`);
   const complete = button(set.completed ? "↶ Chưa đánh" : "✓ Hoàn thành", `button ${set.completed ? "secondary" : "primary"}`, () => {
     if (set.completed) {
       set.slots = set.slots.map((slot) => state.players.some((player) => player.id === slot.id) ? slot : null);
@@ -159,14 +159,14 @@ function renderSet(set) {
     } else {
       if (set.slots.some((slot) => !slot)) return;
       set.completed = true;
-      notify(`Đã hoàn thành set ${set.number}.`);
+      notify(`Đã hoàn thành trận ${set.number}.`);
     }
     save();
     render();
   });
   if (!set.completed && set.slots.some((slot) => !slot)) {
     complete.disabled = true;
-    complete.title = "Chọn đủ 4 người để hoàn thành set";
+    complete.title = "Chọn đủ 4 người để hoàn thành trận";
   }
   actions.append(remove, complete);
   card.append(heading, teams, actions);
@@ -195,7 +195,7 @@ function render() {
   sets.forEach((set) => list.append(renderSet(set)));
   if (!sets.length) {
     const empty = element("div", "empty-state");
-    empty.append(element("strong", "", currentTab === "pending" ? "Chưa có set" : "Chưa có set hoàn thành"));
+    empty.append(element("strong", "", currentTab === "pending" ? "Chưa có trận" : "Chưa có trận hoàn thành"));
     list.append(empty);
   }
 }
