@@ -17,10 +17,8 @@ button, input, select { -webkit-tap-highlight-color: transparent; }
 button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .app { width: min(100% - 40px, 680px); margin: 0 auto; padding: 48px 0 24px; }
 .page-header { margin-bottom: 30px; }
-.eyebrow { font-size: 10px; letter-spacing: 2px; font-weight: 600; color: var(--muted); }
 h1 { margin: 6px 0; font-size: 44px; line-height: 1.2; font-weight: 650; letter-spacing: -2px; }
 .title-dot { color: #8da77c; }
-.page-header p { color: var(--muted); margin: 10px 0 0; }
 h2 { font-size: 17px; font-weight: 650; margin: 0; letter-spacing: -.3px; }
 .panel, .set-card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 22px; }
 .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -42,7 +40,6 @@ input::placeholder { color: #93968d; }
 .player-label { flex: 1; overflow-wrap: anywhere; }
 .delete-player { border: 0; background: transparent; color: var(--muted); min-height: 44px; min-width: 44px; padding: 8px; font-size: 12px; }
 .delete-player:hover, .delete-set:hover { color: #a34438; }
-.empty-players { color: var(--muted); font-size: 13px; padding: 8px 0 0; }
 .sets-section { margin-top: 32px; }
 .tabs { display: flex; margin: 20px 0; border-bottom: 1px solid #dedfd7; gap: 24px; }
 .tab { background: transparent; border: 0; border-bottom: 2px solid transparent; color: var(--muted); padding: 12px 0; margin-bottom: -1px; min-height: 46px; font-size: 14px; }
@@ -66,7 +63,6 @@ select { width: 100%; padding-left: 10px; padding-right: 4px; font-size: 14px; }
 .card-footer .button { min-height: 42px; font-size: 13px; }
 .empty-state { text-align: center; padding: 36px 16px; border: 1px dashed #dcded4; border-radius: 16px; }
 .empty-state strong { font-size: 14px; font-weight: 500; }
-.empty-state p { margin: 6px 0 0; font-size: 12px; color: var(--muted); }
 .notice { position: fixed; bottom: max(20px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); width: max-content; max-width: calc(100% - 32px); background: var(--accent); color: white; padding: 12px 18px; border-radius: 12px; font-size: 13px; box-shadow: 0 4px 20px #0002; z-index: 2; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 [hidden] { display: none !important; }

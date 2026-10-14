@@ -73,7 +73,6 @@ function renderPlayers() {
   const list = $("#player-list");
   list.replaceChildren();
   $("#player-total").textContent = state.players.length;
-  $("#players-empty").hidden = state.players.length > 0;
   state.players.forEach((player) => {
     const row = element("li", "player-row");
     const count = element("span", "player-count", playerCount(player.id));
@@ -160,7 +159,7 @@ function renderSet(set) {
     } else {
       if (set.slots.some((slot) => !slot)) return;
       set.completed = true;
-      notify(`Set ${set.number} đã chuyển sang tab Hoàn thành.`);
+      notify(`Đã hoàn thành set ${set.number}.`);
     }
     save();
     render();
@@ -196,7 +195,7 @@ function render() {
   sets.forEach((set) => list.append(renderSet(set)));
   if (!sets.length) {
     const empty = element("div", "empty-state");
-    empty.append(element("strong", "", currentTab === "pending" ? "Chưa có set nào" : "Chưa có set hoàn thành"), element("p", "", currentTab === "pending" ? "Bấm “Tạo set” để xếp 4 người vào sân." : "Các set đánh xong sẽ xuất hiện ở đây."));
+    empty.append(element("strong", "", currentTab === "pending" ? "Chưa có set" : "Chưa có set hoàn thành"));
     list.append(empty);
   }
 }
@@ -207,7 +206,7 @@ $("#player-form").addEventListener("submit", (event) => {
   const name = input.value.trim().replace(/\s+/g, " ");
   if (!name) { input.focus(); return; }
   if (state.players.some((player) => player.name.normalize("NFC").toLocaleLowerCase("vi") === name.normalize("NFC").toLocaleLowerCase("vi"))) {
-    notify("Tên này đã có. Thêm biệt danh để phân biệt nhé.");
+    notify("Tên người chơi đã tồn tại.");
     input.focus();
     return;
   }
@@ -224,7 +223,6 @@ $("#add-set").addEventListener("click", () => {
   save();
   render();
   $("#set-list").lastElementChild?.scrollIntoView({ block: "nearest" });
-  if (state.players.length < 4) notify("Thêm đủ 4 người để xếp một set.");
 });
 
 document.querySelectorAll(".tab").forEach((tab) => {
